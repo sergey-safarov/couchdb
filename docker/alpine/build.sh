@@ -2,11 +2,11 @@
 
 # This script is wrote by Sergey Safarov <s.safarov@gmail.com>
 
-BUILD_ROOT=/tmp/kazoo
+BUILD_ROOT=/tmp/couchdb
 FILELIST=/tmp/filelist
 FILELIST_BINARY=/tmp/filelist_binary
-TMP_TAR=/tmp/kazoo_min.tar.gz
-IMG_TAR=kazoo_img.tar.gz
+TMP_TAR=/tmp/couchdb_min.tar.gz
+IMG_TAR=couchdb_img.tar.gz
 
 prepare_build() {
 apk add --no-cache findutils abuild build-base git wget bash python2 gcc expat-dev libressl-dev \
@@ -125,7 +125,7 @@ make_image_tar() {
 }
 
 prepare_build
-
+exit 1
 build_and_install
 
 kazoo_files > $FILELIST

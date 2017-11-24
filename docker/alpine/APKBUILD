@@ -1,34 +1,35 @@
 # Maintainer: Sergey Safarov <s.safarov@gmail.com>
-pkgname=kazoo
-pkgver=4.1.38
+pkgname=couchdb
+pkgver=2.1.0
 pkgrel=0
 
 # If building from a git snapshot, specify the gitcommit
 # If building a proper release, leave gitcommit blank
-_gitcommit=bde5ffcedda5eb60bed47f023e8b1c78f99ab550
+#_gitcommit=180a1551435153779628a6698e41557b0e60339e
 
 [ ! -z "${_gitcommit}" ] && pkgver="${pkgver}.$(date +%Y%m%d)"
 [ ! -z "${_gitcommit}" ] && _suffix="-${_gitcommit:0:7}"
 [ ! -z "${_gitcommit}" ] && builddir="$srcdir/$pkgname-$_gitcommit" || builddir="$srcdir/$pkgname-$pkgver"
 [ -z "${_gitcommit}" ] && _gitcommit="${pkgver}"
 
-pkgdesc="Open Source VoIP platform"
-url="https://2600hz.com/"
+pkgdesc="Open Source NoSQL database"
+url="http://couchdb.apache.org/"
 arch="all"
-pkgusers="kazoo"
+pkgusers="couchdb"
 pkggroups="daemon"
 arch="all"
 license="GPL2+"
 options="!fhs"
-depends="libressl2.5-libcrypto expat libgcc ncurses-libs libstdc++ zlib"
-makedepends="wget bash python2 gcc expat-dev libressl-dev erlang erlang-dev erlang-parsetools erlang-tools erlang-crypto erlang-syntax-tools erlang-ssl erlang-eunit erlang-hipe erlang-public-key erlang-asn1 erlang-inets erlang-xmerl erlang-observer erlang-sasl erlang-debugger erlang-runtime-tools"
+# depends="libressl2.5-libcrypto expat libgcc ncurses-libs libstdc++ zlib"
+makedepends="nodejs-npm"
+# makedepends="wget bash python2 gcc expat-dev libressl-dev erlang erlang-dev erlang-parsetools erlang-tools erlang-crypto erlang-syntax-tools erlang-ssl erlang-eunit erlang-hipe erlang-public-key erlang-asn1 erlang-inets erlang-xmerl erlang-observer erlang-sasl erlang-debugger erlang-runtime-tools"
 
-source="${pkgname}-${pkgver}${_suffix}.tar.gz::https://github.com/sergey-safarov/$pkgname/archive/$_gitcommit.tar.gz
+source="${pkgname}-${pkgver}${_suffix}.tar.gz::https://github.com/apache/$pkgname/archive/$_gitcommit.tar.gz
 "
 
 snapshot() {
         if [ ! -f "$SRCDEST"/${pkgname}-${pkgver}${_suffix}.tar.gz ]; then
-            wget -O "$SRCDEST"/${pkgname}-${pkgver}${_suffix}.tar.gz https://github.com/sergey-safarov/$pkgname/archive/$_gitcommit.tar.gz
+            wget -O "$SRCDEST"/${pkgname}-${pkgver}${_suffix}.tar.gz https://github.com/apache/$pkgname/archive/$_gitcommit.tar.gz
         fi
         SHA512SUM=$(sha512sum "$SRCDEST"/${pkgname}-${pkgver}${_suffix}.tar.gz | sed -e "s:$SRCDEST/::")
         sed -i -e "s/^\(sha512sums=.\).*/\1$SHA512SUM/" APKBUILD
@@ -37,29 +38,16 @@ snapshot() {
 prepare() {
 	default_prepare
 	cd "$builddir"
-	make deps/Makefile
-	make -C deps fetch-deps
-
-# workarround to compily certifi
-	rm -Rf deps/certifi
-	make -C deps fetch-deps
-
-# workarround to compily couchbeam
-	rm -Rf deps/couchbeam
-	make -C deps fetch-deps
-
-	sed -i -e 's:{\\:\\{\\:'  deps/rabbit_common/erlang.mk
-#	sed -i -e '/^\s\+,wx$/d' rel/relx.config.src
 }
 
 build() {
 	cd "$builddir"
-	make deps
-	make core
-	make apps
+	export COUCHDB_VERSION=${pkgver}
+	./configure --disable-docs
+	./bin/rebar get-deps
+	./bin/rebar compile
 	make
-	make build-release
-	make sup_completion
+	return 1
 }
 
 package() {
@@ -70,5 +58,5 @@ package() {
 	mkdir $pkgdir/opt/kazoo/logs
 }
 
-sha512sums="afe13db7d64a2178f66690e7d71f8b338120978e2941c917b70477317a2ffb45a2ae4f4f25189df6173cb9c373f08a6dda75c13283bd795f305972c528ca08cf  kazoo-4.1.19.20171025-bde5ffc.tar.gz
+sha512sums="8dc6b716ae834b2984f71b22b51e34135d356722196b9faae932670a906b040527ad71f4d36e4bd8de392178fc4e2582ddf827fdd5c02d1c5f13528f750fcd0c  couchdb-2.1.0.tar.gz
 "
